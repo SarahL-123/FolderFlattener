@@ -13,6 +13,6 @@ namespace FolderFlattener.Implementations.Helpers
         string PathToFolder,
         string FileNameNoExtension,
         string Extension,
-        int LeafNumber,
-        int ItemNumber);
+        int NumFilesInFile=1,
+        bool isCompressedFile = false);
 }

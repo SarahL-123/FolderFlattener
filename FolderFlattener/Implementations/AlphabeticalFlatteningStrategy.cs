@@ -24,33 +24,33 @@ namespace FolderFlattener.Implementations
         /// Contains all the items in order<br/>
         /// If many child items then use better data structure, for now it doesn't matter
         /// </summary>
-        private IList<FileNameAndExtRecord> folderItems;
+        private IList<FileNameAndExtRecord> fileRecords;
 
         public AlphabeticalFlatteningStrategy()
         {
-            folderItems = new List<FileNameAndExtRecord>();
+            fileRecords = new List<FileNameAndExtRecord>();
         }
 
         //**********************************
 
         public void DetectFiles(IEnumerable<string> folderPaths)
         {
-            folderItems.Clear();
+            fileRecords.Clear();
 
 
-            //recursively loop through the folders,
-            // If it has files, store it in the leaf folder
-            int leafNumber = 1; // start from 1 for humans to read
+            //recursively loop through the folders, and count how many items there are
+            int itemNumber = 1; // start from 1 for humans
+
             foreach (var folderPath in folderPaths)
             {
-                leafNumber = BuildFolderItemsRecursively(folderPath, leafNumber);
+                itemNumber = BuildFolderItemsRecursively(folderPath, itemNumber);
             }
 
         }
 
 
         /// <summary>
-        /// Adds items to <see cref="folderItems"/> recursively.Returns the new leaf
+        /// Adds items to <see cref="fileRecords"/> recursively.Returns the new item
         /// number to use.
         /// </summary>
         /// <param name="folderFilePath"></param>
@@ -58,7 +58,7 @@ namespace FolderFlattener.Implementations
         /// <returns></returns>
         private int BuildFolderItemsRecursively(
             string folderFilePath,
-            int leafNumber)
+            int itemNumber)
         {
             // Get files, and store them
             var fileNamesAndExts = 
@@ -68,35 +68,44 @@ namespace FolderFlattener.Implementations
 
             if (fileNamesAndExts.Count != 0)
             {
-                // Store each item
-                int itemNumber = 1;
-
                 foreach (var fileNameAndExt in fileNamesAndExts)
                 {
-                    folderItems.Add(new FileNameAndExtRecord(
+                    int numFilesInFile = 1;
+                    bool isCompressedFile = false;
+
+                    // determine if the file is a compressed file
+                    if (CompressedFileHelpers.IsCompressedFile(fileNameAndExt.ExtensionWithDot))
+                    {
+                        numFilesInFile = CompressedFileHelpers.GetNumItemsInCompressedFile(
+                            pathToFolderNotIncludingFile: folderFilePath,
+                            fileNameOnly: fileNameAndExt.FileNameNoExtension,
+                            fileExtensionWithDotOnly: fileNameAndExt.ExtensionWithDot);
+
+                        isCompressedFile = true;
+                    }
+
+
+                    fileRecords.Add(new FileNameAndExtRecord(
                         PathToFolder: folderFilePath,
                         FileNameNoExtension: fileNameAndExt.FileNameNoExtension,
                         Extension: fileNameAndExt.ExtensionWithDot,
-                        LeafNumber: leafNumber,
-                        ItemNumber: itemNumber));
+                        NumFilesInFile: numFilesInFile,
+                        isCompressedFile: isCompressedFile));
 
                     itemNumber++;
                 }
-
-                // This item used up 1 leaf number, because it has items in it
-                leafNumber++;
             }
 
             // Then, see if there are any sub directories, if so call it recursively
             IReadOnlyList<string> subDirs = Helpers.FolderEnumeratorHelper.GetDirectoriesInFolder(folderFilePath);
             foreach (var subDir in subDirs)
             {
-                leafNumber = BuildFolderItemsRecursively(
+                itemNumber = BuildFolderItemsRecursively(
                     folderFilePath: subDir,
-                    leafNumber: leafNumber);
+                    itemNumber: itemNumber);
             }
 
-            return leafNumber;
+            return itemNumber;
 
         }
 
@@ -108,62 +117,48 @@ namespace FolderFlattener.Implementations
         public void Output(string outputFolderPath)
         {
             // First we need to calculate the largest item number
-            int largestLeafNumber = 0;
-            int largestItemNumber = 0;
+            int totalItems = 0;
 
-            foreach (var folderItem in folderItems)
+            foreach (var folderItem in fileRecords)
             {
-                if (folderItem.LeafNumber > largestLeafNumber) largestLeafNumber = folderItem.LeafNumber;
-                if (folderItem.ItemNumber > largestItemNumber) largestItemNumber = folderItem.ItemNumber;
+                totalItems += folderItem.NumFilesInFile;
             }
 
-            int largestLeafNumDigits = largestLeafNumber.ToString().Length;
-            int largestItemNumDigits = largestItemNumber.ToString().Length;
+            int numDigits = totalItems.ToString().Length;
+
+            var nameIterator = new NameIterator(numDigits);
 
             //***********************
 
-            foreach (var item in this.folderItems)
+            foreach (var item in this.fileRecords)
             {
+                // handle compressed files
+                if (item.isCompressedFile)
+                {
+                    CompressedFileHelpers.WriteCompressedFileContents(
+                        item,
+                        nameIterator,
+                        outputFolderPath
+                        );
+                }
+                else
+                {
+                    string newFileName = nameIterator.GetFilenameAdvanceNext();
+
+                    Helpers.FileCopyHelper.CopyRename(
+                        item,
+                        newFileName,
+                        outputFolderPath
+                        );
+                }
 
 
-                string newFileName = FormatToNewFileName(
-                    leafNumber: item.LeafNumber,
-                    itemNumber: item.ItemNumber,
-                    largestLeafNumDigits: largestLeafNumDigits,
-                    largestItemNumDigits: largestItemNumDigits);
-
-                Helpers.FileCopyHelper.CopyRename(
-                    item,
-                    newFileName,
-                    outputFolderPath
-                    );
+                    
             }
 
         }
 
 
-        /// <summary>
-        /// This only makes the final file name, not the folder or the extension
-        /// </summary>
-        private string FormatToNewFileName(
-            int leafNumber,
-            int itemNumber,
-            int largestLeafNumDigits,
-            int largestItemNumDigits)
-        {
-            // We need to format the number to strings, but it 
-
-            string leafNumberPadded = leafNumber.ToString();
-            leafNumberPadded = leafNumberPadded.PadLeft(
-                totalWidth: largestLeafNumDigits,
-                paddingChar: '0');
-
-            string itemNumberPadded = itemNumber.ToString();
-            itemNumberPadded = itemNumberPadded.PadLeft(
-                totalWidth: largestItemNumDigits,
-                paddingChar: '0');
-
-            return $"{leafNumberPadded}_{itemNumberPadded}";
-        }
+        
     }
 }
