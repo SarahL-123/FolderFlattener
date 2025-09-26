@@ -62,7 +62,7 @@ namespace FolderFlattenerWpfUi
 
             if (folderDiag.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                targetFolder = folderDiag.FileName;
+                this.TargetFolder = folderDiag.FileName;
             }
 
             this.FlattenCommand.NotifyCanExecuteChanged();

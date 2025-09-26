@@ -5,32 +5,76 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FolderFlattenerWpfUi"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="Folder Flattener" 
+        Height="500" Width="400"
         x:Name="MainWindow_WD">
-    <StackPanel DataContext="{Binding ElementName=MainWindow_WD, Path=MainWindowVM}">
-        <TextBlock Text="Folder Flattener" />
+    <Grid DataContext="{Binding ElementName=MainWindow_WD, Path=MainWindowVM}">
 
-        <TextBlock Text="Select input folders"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal">
-            <Button Content=" + " Command="{Binding AddSourceFoldersCommand}" />
-            <Button Content="Clear" Command="{Binding ResetSourceFoldersCommand}" />
+        <StackPanel Grid.Row="0">
+            <TextBlock 
+                Text="Folder Flattener"
+                HorizontalAlignment="Center"
+                Style="{StaticResource HeaderTextblockStyle}"/>
+            <TextBlock Text="Given a list of folders, flattens the contents into a single folder, renaming all the files as ascending numbers. Handles rar files for now as well" 
+                       TextWrapping="Wrap"/>
+            <Separator />
         </StackPanel>
         
-        <ListView ItemsSource="{Binding SourceFolders}">
+        
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Select input folders (folder order preserved)" 
+                       Style="{StaticResource SubheaderTextblockStyle}"/>
+
+            <DockPanel HorizontalAlignment="Stretch">
+                <Button
+                    Content="+ Add Folder " 
+                    Command="{Binding AddSourceFoldersCommand}" 
+                    DockPanel.Dock="Left"/>
+                <Button 
+                    Content="- Clear All" 
+                    Command="{Binding ResetSourceFoldersCommand}" 
+                    DockPanel.Dock="Right"
+                    HorizontalAlignment="Right"/>
+            </DockPanel>
+
+            <ListView ItemsSource="{Binding SourceFolders}">
+            </ListView>
+
             
-        </ListView>
-
-        <Separator />
-        <TextBlock Text="Select output folder" />
-        <Button Content="Select" Command="{Binding SelectTargetFolderCommand}" />
-        <TextBlock Text="{Binding TargetFolder}" />
-
-        <Separator />
-
-        <Button Content="Go!" Command="{Binding FlattenCommand}" />
+        </StackPanel>
 
 
+        <StackPanel Grid.Row="2">
+            <Separator />
+            <Button Command="{Binding SelectTargetFolderCommand}">
+                <Button.Content>
+                    <TextBlock Text="Select output folder" 
+                        Style="{StaticResource SubheaderTextblockStyle}"/>
+                </Button.Content>
+            </Button>
+            <TextBlock Text="{Binding TargetFolder}" />
+        </StackPanel>
+        
 
-    </StackPanel>
+        <Button
+            Grid.Row="3"
+            Command="{Binding FlattenCommand}"
+            Style="{StaticResource BigButtonStyle}">
+            <Button.Content>
+                <TextBlock Text="Flatten!" 
+                    Style="{StaticResource SubheaderTextblockStyle}"/>
+            </Button.Content>
+        </Button>
+
+
+
+    </Grid>
 </Window>
