@@ -1,0 +1,36 @@
+﻿<Window x:Class="FolderFlattenerWpfUi.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FolderFlattenerWpfUi"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        x:Name="MainWindow_WD">
+    <StackPanel DataContext="{Binding ElementName=MainWindow_WD, Path=MainWindowVM}">
+        <TextBlock Text="Folder Flattener" />
+
+        <TextBlock Text="Select input folders"/>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content=" + " Command="{Binding AddSourceFoldersCommand}" />
+            <Button Content="Clear" Command="{Binding ResetSourceFoldersCommand}" />
+        </StackPanel>
+        
+        <ListView ItemsSource="{Binding SourceFolders}">
+            
+        </ListView>
+
+        <Separator />
+        <TextBlock Text="Select output folder" />
+        <Button Content="Select" Command="{Binding SelectTargetFolderCommand}" />
+        <TextBlock Text="{Binding TargetFolder}" />
+
+        <Separator />
+
+        <Button Content="Go!" Command="{Binding FlattenCommand}" />
+
+
+
+    </StackPanel>
+</Window>
