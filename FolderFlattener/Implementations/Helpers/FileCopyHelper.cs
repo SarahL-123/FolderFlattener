@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SharpCompress.Archives;
+using SharpCompress.Archives.Rar;
+using SharpCompress.Readers;
+using SharpCompress.Writers;
 
 namespace FolderFlattener.Implementations.Helpers
 {
@@ -37,5 +41,23 @@ namespace FolderFlattener.Implementations.Helpers
                 destFileName: finalOutputPath);
 
         }
+
+        //public void TestABC()
+        //{
+        //    // works for rar!
+        //    //using var archive = RarArchive.Open("test.rar");
+        //    //foreach (var entry in archive.Entries)
+        //    //{
+        //    //    entry.WriteToFile()
+        //    //}
+
+        //    using var archive = SharpCompress.Archives.SevenZip.SevenZipArchive.Open("test.rar");
+        //    foreach (var entry in archive.Entries)
+        //    {
+        //        entry.WriteToFile()
+        //    }
+
+
+        //}
     }
 }

@@ -1,0 +1,32 @@
+﻿
+
+
+How the logic works
+
+
+1) User provides a list of folders
+
+2) Build an ordered tree of nodes, where each node represents
+     - Either a folder (branch nodes)
+     - Or a file (the leaf nodes)
+   Note that for things like .7zip or .rar, it should be a folder node
+   
+   We don't need to do anything yet, right now we're just generating the list of files so we can
+   show the user. (And in the future, to select (and reorder?)).
+
+3) When 'output' command is executed, then we call .Output(IFilepathGenerator) on each top level node.
+
+   This will work recursively
+   (ie each node will call .Output on itself and its children, and so on)
+
+   The IFilepathGenerator basically is an object that we pass around, and every time you ask it for
+   a new filepath it will give you the next one. It also has a function that increases the 'chapter' number.
+
+   So, if it's a branch node, it will just not call the IFilepathGenerator, and instead pass it directly
+   to the children.
+   
+   However if the branch node is actually a compressed file (.rar, .7zip etc) then it can do its own logic.
+   For now we will just not support nested compression (eg a .rar file that contains another .rar file) because
+   I just want to save time.
+
+
